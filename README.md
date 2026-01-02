@@ -1,1 +1,1 @@
-Pt. bare en test 
+På denne side kan du søge i Aksel Olsens plantekartotek. Her finder du omkring 15.000 plantenavne og deres danske oversættelser. Siden er lavet som en hjælpeside til samarbejdet mellem Kolding Stadsarkiv og Geografisk Haves Venner. Data på siden er lavet af Geografisk haves Venner. 
