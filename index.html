@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Find et plantenavn</title>
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+    .result {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .scientific {
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Find et plantenavn</h1>
+<p>Tast navnet på den plante, du leder efter og tryk enter. Så får du det danske navn.</p>
+
+<input type="text" id="search" placeholder="e.g. Quercus robur">
+
+<div id="results"></div>
+
+<script>
+  let fuse;
+  let plants = [];
+
+  fetch("plants.json")
+    .then(res => res.json())
+    .then(data => {
+      plants = data;
+
+      fuse = new Fuse(plants, {
+        keys: [
+          { name: "scientific_name", weight: 0.8 },
+          { name: "common_name", weight: 0.2 }
+        ],
+        threshold: 0.35,
+        ignoreLocation: true,
+        minMatchCharLength: 3
+      });
+    });
+
+  const searchInput = document.getElementById("search");
+  const resultsDiv = document.getElementById("results");
+
+  searchInput.addEventListener("input", function () {
+    const query = this.value.trim();
+    resultsDiv.innerHTML = "";
+
+    if (query.length < 3) {
+      resultsDiv.innerHTML = "<p>Tast mindst 3 bogstaver.</p>";
+      return;
+    }
+
+    const results = fuse.search(query, { limit: 10 });
+
+    if (results.length === 0) {
+      resultsDiv.innerHTML = "<p>Ingen resultater.</p>";
+      return;
+    }
+
+    results.forEach((r, index) => {
+      const div = document.createElement("div");
+      div.className = "result";
+      div.innerHTML = `
+        <div class="scientific_name">${index + 1}. ${r.item.scientific_name}</div>
+        <div>${r.item.common_name}</div>
+      `;
+      resultsDiv.appendChild(div);
+    });
+  });
+</script>
+</body>
+</html>
