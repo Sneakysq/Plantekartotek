@@ -1,43 +1,111 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
   <meta charset="UTF-8">
   <title>Find et plantenavn</title>
   <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 700px;
+      max-width: 800px;
       margin: 40px auto;
       padding: 0 20px;
+      background-color: #f7f7f7;
+      line-height: 1.6;
     }
+
+    h1 {
+      font-size: 28px;
+    }
+
+    p {
+      font-size: 18px;
+    }
+
     input {
       width: 100%;
-      padding: 12px;
+      padding: 16px;
+      font-size: 20px;
+      margin: 20px 0;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .status {
       font-size: 16px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
+      color: #555;
     }
+
     .result {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
+      background: #fff;
+      padding: 16px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
+
+    .common {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
     .scientific {
+      font-size: 18px;
       font-style: italic;
+      color: #555;
+    }
+
+    mark {
+      background-color: #fff2a8;
+      padding: 0 3px;
+    }
+
+    .load-more {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      font-size: 20px;
+      margin: 20px 0;
+      background-color: #4a7c59;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .load-more:hover {
+      background-color: #3b6449;
     }
   </style>
 </head>
 <body>
 
 <h1>Find et plantenavn</h1>
-<p>Begynd at taste navnet på den plante du leder efter. Resultaterne dukker op efterhånden som du taster.</p>
+<p>
+  Søg på både <strong>dansk navn</strong> og <strong>videnskabeligt navn</strong>.
+</p>
 
-<input type="text" id="search" placeholder="e.g. Quercus robur">
+<input
+  type="text"
+  id="search"
+  placeholder="Fx eg, Quercus eller robur"
+  autocomplete="off"
+/>
 
+<div class="status" id="status"></div>
 <div id="results"></div>
+<button id="loadMore" class="load-more" style="display:none;">
+  Vis flere resultater
+</button>
 
 <script>
   let fuse;
   let plants = [];
+  let allResults = [];
+  let visibleCount = 0;
+  const STEP = 10;
 
   fetch("plants.json")
     .then(res => res.json())
@@ -46,45 +114,82 @@
 
       fuse = new Fuse(plants, {
         keys: [
-          { name: "scientific_name", weight: 0.8 },
-          { name: "common_name", weight: 0.2 }
+          { name: "common_name", weight: 0.6 },
+          { name: "scientific_name", weight: 0.4 }
         ],
-        threshold: 0.35,
+        threshold: 0.4,
         ignoreLocation: true,
-        minMatchCharLength: 3
+        minMatchCharLength: 2
       });
     });
 
   const searchInput = document.getElementById("search");
   const resultsDiv = document.getElementById("results");
+  const statusDiv = document.getElementById("status");
+  const loadMoreBtn = document.getElementById("loadMore");
+
+  function highlight(text, query) {
+    if (!text) return "";
+    const regex = new RegExp(`(${query})`, "gi");
+    return text.replace(regex, "<mark>$1</mark>");
+  }
+
+  function renderResults() {
+    const query = searchInput.value.trim();
+    const slice = allResults.slice(0, visibleCount);
+
+    resultsDiv.innerHTML = "";
+
+    slice.forEach((r, index) => {
+      const div = document.createElement("div");
+      div.className = "result";
+      div.innerHTML = `
+        <div class="common">
+          ${index + 1}. ${highlight(r.item.common_name || "—", query)}
+        </div>
+        <div class="scientific">
+          ${highlight(r.item.scientific_name, query)}
+        </div>
+      `;
+      resultsDiv.appendChild(div);
+    });
+
+    statusDiv.textContent =
+      `Viser ${slice.length} ud af ${allResults.length} resultater`;
+
+    loadMoreBtn.style.display =
+      visibleCount < allResults.length ? "block" : "none";
+  }
 
   searchInput.addEventListener("input", function () {
     const query = this.value.trim();
     resultsDiv.innerHTML = "";
+    statusDiv.textContent = "";
+    loadMoreBtn.style.display = "none";
 
-    if (query.length < 3) {
-      resultsDiv.innerHTML = "<p>Tast mindst 3 bogstaver.</p>";
+    if (query.length < 2) {
+      statusDiv.textContent = "Tast mindst 2 bogstaver.";
       return;
     }
 
-    const results = fuse.search(query, { limit: 10 });
+    allResults = fuse.search(query);
+    visibleCount = STEP;
 
-    if (results.length === 0) {
-      resultsDiv.innerHTML = "<p>Ingen resultater.</p>";
+    if (allResults.length === 0) {
+      statusDiv.textContent = "Ingen planter fundet.";
       return;
     }
 
-    results.forEach((r, index) => {
-      const div = document.createElement("div");
-      div.className = "result";
-      div.innerHTML = `
-        <div class="scientific_name">${index + 1}. ${r.item.scientific_name}</div>
-        <div>${r.item.common_name}</div>
-      `;
-      resultsDiv.appendChild(div);
-    });
+    renderResults();
+  });
+
+  loadMoreBtn.addEventListener("click", function () {
+    visibleCount += STEP;
+    renderResults();
   });
 </script>
-</body>
 
+</body>
 </html>
+
+
