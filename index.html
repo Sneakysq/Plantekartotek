@@ -144,13 +144,22 @@
       const div = document.createElement("div");
       div.className = "result";
       div.innerHTML = `
-        <div class="common">
-          ${index + 1}. ${highlight(r.item.common_name || "—", query)}
-        </div>
-        <div class="scientific">
-          ${highlight(r.item.scientific_name, query)}
-        </div>
+ div.innerHTML = `
+  <div class="scientific">
+    ${index + 1}. ${highlight(r.item.scientific_name, query)}
+  </div>
+  <div class="common">
+    ${highlight(r.item.common_name || "—", query)}
+  </div>
       `;
+      <div class="scientific">
+  ${index + 1}. <em>Videnskabeligt navn:</em>
+  ${highlight(r.item.scientific_name, query)}
+</div>
+<div class="common">
+  <strong>Dansk navn:</strong>
+  ${highlight(r.item.common_name || "—", query)}
+</div>
       resultsDiv.appendChild(div);
     });
 
@@ -187,9 +196,24 @@
     visibleCount += STEP;
     renderResults();
   });
+
+  .scientific {
+  font-size: 22px;
+  font-style: italic;
+  font-weight: bold;
+  color: #222;
+}
+
+.common {
+  font-size: 18px;
+  font-weight: normal;
+  color: #555;
+}
+
 </script>
 
 </body>
 </html>
+
 
 
