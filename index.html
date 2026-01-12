@@ -15,13 +15,8 @@
       line-height: 1.6;
     }
 
-    h1 {
-      font-size: 28px;
-    }
-
-    p {
-      font-size: 18px;
-    }
+    h1 { font-size: 28px; }
+    p { font-size: 18px; }
 
     input {
       width: 100%;
@@ -46,14 +41,15 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    .common {
+    .scientific {
       font-size: 22px;
+      font-style: italic;
       font-weight: bold;
+      color: #222;
     }
 
-    .scientific {
+    .common {
       font-size: 18px;
-      font-style: italic;
       color: #555;
     }
 
@@ -83,9 +79,7 @@
 <body>
 
 <h1>Find et plantenavn</h1>
-<p>
-  Søg på både <strong>dansk navn</strong> og <strong>videnskabeligt navn</strong>.
-</p>
+<p>Søg på både <strong>dansk navn</strong> og <strong>videnskabeligt navn</strong>.</p>
 
 <input
   type="text"
@@ -96,6 +90,7 @@
 
 <div class="status" id="status"></div>
 <div id="results"></div>
+
 <button id="loadMore" class="load-more" style="display:none;">
   Vis flere resultater
 </button>
@@ -111,7 +106,6 @@
     .then(res => res.json())
     .then(data => {
       plants = data;
-
       fuse = new Fuse(plants, {
         keys: [
           { name: "common_name", weight: 0.6 },
@@ -144,22 +138,13 @@
       const div = document.createElement("div");
       div.className = "result";
       div.innerHTML = `
- div.innerHTML = `
-  <div class="scientific">
-    ${index + 1}. ${highlight(r.item.scientific_name, query)}
-  </div>
-  <div class="common">
-    ${highlight(r.item.common_name || "—", query)}
-  </div>
+        <div class="scientific">
+          ${index + 1}. ${highlight(r.item.scientific_name, query)}
+        </div>
+        <div class="common">
+          ${highlight(r.item.common_name || "—", query)}
+        </div>
       `;
-      <div class="scientific">
-  ${index + 1}. <em>Videnskabeligt navn:</em>
-  ${highlight(r.item.scientific_name, query)}
-</div>
-<div class="common">
-  <strong>Dansk navn:</strong>
-  ${highlight(r.item.common_name || "—", query)}
-</div>
       resultsDiv.appendChild(div);
     });
 
@@ -196,24 +181,12 @@
     visibleCount += STEP;
     renderResults();
   });
-
-  .scientific {
-  font-size: 22px;
-  font-style: italic;
-  font-weight: bold;
-  color: #222;
-}
-
-.common {
-  font-size: 18px;
-  font-weight: normal;
-  color: #555;
-}
-
 </script>
 
 </body>
 </html>
+
+
 
 
 
